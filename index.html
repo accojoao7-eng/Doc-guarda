@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DocGuarda">
+<meta name="theme-color" content="#f5a623">
+<title>DocGuarda</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f14;
+    --surface: #16181f;
+    --card: #1e2028;
+    --border: #2a2d38;
+    --accent: #f5a623;
+    --accent2: #e05c2f;
+    --text: #f0f0f0;
+    --muted: #7a7f94;
+    --green: #3ecf8e;
+    --red: #e05c5c;
+    --blue: #5b8dee;
+    --purple: #9b6dff;
+    --radius: 12px;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overscroll-behavior: none;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    padding-top: var(--safe-top);
+    height: calc(56px + var(--safe-top));
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .header-right { display: flex; gap: 8px; align-items: center; }
+  .icon-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .icon-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* FULL LAYOUT */
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* BODY AREA */
+  .body-area {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* BOTTOM NAV (mobile) */
+  .bottom-nav {
+    display: none;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding-bottom: var(--safe-bottom);
+    z-index: 100;
+    flex-shrink: 0;
+  }
+  .bottom-nav-inner {
+    display: flex;
+    height: 56px;
+  }
+  .bnav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.62rem;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .bnav-item .bnav-icon { font-size: 1.3rem; }
+  .bnav-item.active { color: var(--accent); }
+
+  /* SIDEBAR */
+  aside {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+    transition: transform 0.3s;
+  }
+  .sidebar-section { padding: 14px 10px 6px; }
+  .sidebar-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 0 8px;
+    margin-bottom: 6px;
+  }
+  .year-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    padding: 7px 10px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.15s;
+  }
+  .year-btn:hover { background: var(--card); }
+  .year-btn .arrow { transition: transform 0.2s; font-size: 0.65rem; color: var(--muted); }
+  .year-btn.open .arrow { transform: rotate(90deg); }
+  .months-list { display: none; padding: 2px 0 2px 10px; }
+  .months-list.open { display: block; }
+  .month-item {
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .month-item:hover { background: var(--card); color: var(--text); }
+  .month-item.active { background: rgba(245,166,35,0.12); color: var(--accent); font-weight: 500; }
+  .month-count { font-size: 0.68rem; background: var(--border); border-radius: 10px; padding: 1px 6px; color: var(--muted); }
+  .month-item.active .month-count { background: rgba(245,166,35,0.2); color: var(--accent); }
+  .folder-item {
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .folder-item:hover { background: var(--card); color: var(--text); }
+  .folder-item.active { background: rgba(91,141,238,0.12); color: var(--blue); font-weight: 500; }
+  .folder-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .folder-del { display: none; background: none; border: none; color: var(--red); cursor: pointer; font-size: 0.75rem; padding: 0 2px; }
+  .folder-item:hover .folder-del { display: block; }
+  .btn-new-folder {
+    margin: 4px 10px 10px;
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    padding: 7px 10px;
+    cursor: pointer;
+    width: calc(100% - 20px);
+    text-align: left;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-new-folder:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-static .nav-item {
+    padding: 7px 18px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--muted);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    margin: 1px 6px;
+  }
+  .nav-static .nav-item:hover { background: var(--card); color: var(--text); }
+  .nav-static .nav-item.active { background: var(--card); color: var(--text); }
+  .nav-item .ico { font-size: 1rem; width: 20px; text-align: center; }
+
+  /* MAIN */
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 10px;
+  }
+  .main-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    flex: 1;
+    min-width: 0;
+  }
+  .main-title small { font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
+
+  /* BUTTONS */
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover, .btn-primary:active { background: #e0952a; }
+  .btn-ghost { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(224,92,92,0.15); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+
+  /* FAB */
+  .fab {
+    position: fixed;
+    bottom: calc(70px + var(--safe-bottom));
+    right: 18px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 56px; height: 56px;
+    font-size: 1.6rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(245,166,35,0.4);
+    z-index: 90;
+    transition: transform 0.15s;
+  }
+  .fab:active { transform: scale(0.93); }
+
+  /* SEARCH OVERLAY */
+  .search-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    padding: calc(60px + var(--safe-top)) 16px 16px;
+    backdrop-filter: blur(4px);
+  }
+  .search-overlay.open { display: block; }
+  .search-box {
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 12px 16px;
+    width: 100%;
+    font-size: 1rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+  }
+  .search-results {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .search-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.15s;
+  }
+  .search-item:hover { border-color: var(--accent); }
+  .search-item-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .search-item-name { font-size: 0.88rem; font-weight: 500; }
+  .search-item-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; }
+  .stat-value.orange { color: var(--accent); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.purple { color: var(--purple); }
+
+  /* FILTER TAGS */
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .tag-filter {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 13px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .tag-filter.active { background: rgba(245,166,35,0.12); border-color: var(--accent); color: var(--accent); }
+
+  /* GRID */
+  .files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .file-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .file-card:active { transform: scale(0.97); }
+  .file-thumb {
+    width: 100%;
+    height: 90px;
+    border-radius: 8px;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .file-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .file-name { font-size: 0.78rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 3px; }
+  .file-meta { font-size: 0.68rem; color: var(--muted); }
+  .file-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tag-conta { background: rgba(224,92,47,0.2); color: var(--accent2); }
+  .tag-fatura { background: rgba(91,141,238,0.2); color: var(--blue); }
+  .tag-comprovante { background: rgba(62,207,142,0.2); color: var(--green); }
+  .tag-outros { background: rgba(155,109,255,0.2); color: var(--purple); }
+  .file-card .del-btn {
+    position: absolute;
+    top: 7px; right: 7px;
+    background: rgba(224,92,92,0.15);
+    border: none;
+    border-radius: 6px;
+    color: var(--red);
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .file-card:hover .del-btn { opacity: 1; }
+
+  /* LIST */
+  .files-list { display: flex; flex-direction: column; gap: 6px; }
+  .file-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .file-row:active { border-color: var(--accent); }
+  .file-row-icon { font-size: 1.3rem; width: 28px; text-align: center; flex-shrink: 0; }
+  .file-row-info { flex: 1; min-width: 0; }
+  .file-row-name { font-size: 0.88rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-row-meta { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
+  .file-row-del { background: none; border: none; color: var(--muted); font-size: 0.9rem; cursor: pointer; padding: 4px 6px; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+  .empty-icon { font-size: 3rem; margin-bottom: 10px; opacity: 0.35; }
+  .empty h3 { font-family: 'Syne', sans-serif; font-size: 1.05rem; margin-bottom: 6px; color: var(--text); }
+  .empty p { font-size: 0.82rem; }
+
+  /* MODAL BASE */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    z-index: 300;
+    display: flex;
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px;
+    padding-bottom: calc(24px + var(--safe-bottom));
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideSheet 0.3s ease;
+  }
+  @keyframes slideSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal h2 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 18px; }
+  .modal-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: var(--card);
+    border: none;
+    border-radius: 8px;
+    color: var(--muted);
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.78rem;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+  .form-group select option { background: var(--surface); }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  .drop-zone.has-file { border-color: var(--green); background: rgba(62,207,142,0.05); color: var(--green); }
+  .drop-zone .drop-icon { font-size: 2.2rem; margin-bottom: 6px; }
+  .modal-footer { display: flex; gap: 8px; margin-top: 18px; }
+  .modal-footer .btn { flex: 1; justify-content: center; padding: 12px; font-size: 0.9rem; }
+
+  /* VIEWER MODAL */
+  .modal-viewer {
+    align-items: center;
+    padding: 16px;
+  }
+  .modal-viewer .modal {
+    border-radius: 16px;
+    max-height: 92vh;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    animation: fadeScale 0.2s ease;
+  }
+  @keyframes fadeScale { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+  .viewer-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 14px; padding-right: 40px; }
+  .viewer-body { background: var(--card); border-radius: 10px; overflow: hidden; }
+  .viewer-body img { max-width: 100%; display: block; }
+  .viewer-body iframe { width: 100%; height: 60vh; border: none; display: block; }
+  .viewer-meta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 0.78rem; color: var(--muted); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: calc(70px + var(--safe-top));
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 0.82rem;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    white-space: nowrap;
+  }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.error { border-left: 3px solid var(--red); }
+  @keyframes fadeIn { from { opacity:0; transform: translateX(-50%) translateY(-8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    aside { display: none; }
+    .bottom-nav { display: flex; flex-direction: column; }
+    .fab { display: flex; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .files-grid { grid-template-columns: repeat(2, 1fr); }
+    .main-add-btn { display: none; }
+  }
+
+  /* TABLET/DESKTOP */
+  @media (min-width: 641px) {
+    .bottom-nav { display: none; }
+    .fab { display: none; }
+    header { padding: 0 20px; height: 60px; }
+    .header-search {
+      position: relative;
+    }
+    .header-search input {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 7px 12px 7px 32px;
+      font-size: 0.83rem;
+      width: 200px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .header-search input:focus { border-color: var(--accent); width: 260px; }
+    .header-search .s-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem; }
+    .modal-overlay { align-items: center; padding: 20px; }
+    .modal {
+      border-radius: 16px;
+      max-width: 480px;
+      max-height: 88vh;
+      padding-bottom: 24px;
+      animation: fadeScale 0.2s ease;
+    }
+    .modal-handle { display: none; }
+  }
+
+  /* SIDEBAR MOBILE DRAWER */
+  .sidebar-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 150;
+  }
+  .sidebar-drawer-overlay.open { display: block; }
+  #mobileSidebar {
+    display: none;
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 160;
+    padding-top: var(--safe-top);
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+  #mobileSidebar.open { transform: translateX(0); display: flex; flex-direction: column; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">Doc<span>Guarda</span></div>
+    <div class="header-right">
+      <!-- Desktop search -->
+      <div class="header-search" style="display:none" id="desktopSearchWrap">
+        <span class="s-icon">🔍</span>
+        <input type="text" placeholder="Buscar..." oninput="handleSearch(this.value)" id="desktopSearch">
+      </div>
+      <!-- Mobile: search icon -->
+      <div class="icon-btn" id="mobileSearchBtn" onclick="openSearch()">🔍</div>
+      <!-- View toggle (desktop) -->
+      <div class="icon-btn" id="btnGrid" onclick="setView('grid')" title="Grade">⊞</div>
+      <div class="icon-btn" id="btnList" onclick="setView('list')" title="Lista">≡</div>
+      <!-- Desktop add -->
+      <button class="btn btn-primary main-add-btn" onclick="openUploadModal()">+ Arquivo</button>
+      <!-- Mobile: menu -->
+      <div class="icon-btn" id="menuBtn" style="display:none" onclick="openMobileSidebar()">☰</div>
+    </div>
+  </header>
+
+  <div class="body-area">
+    <!-- DESKTOP SIDEBAR -->
+    <aside id="desktopSidebar">
+      <div class="sidebar-section nav-static">
+        <div class="sidebar-label">Navegação</div>
+        <div class="nav-item active" id="nav-all" onclick="selectView('all')"><span class="ico">🗂️</span> Todos</div>
+        <div class="nav-item" id="nav-recent" onclick="selectView('recent')"><span class="ico">🕐</span> Recentes</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Por Período</div>
+        <div id="yearGroupsDesktop"></div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Pastas</div>
+        <div id="customFoldersDesktop"></div>
+        <button class="btn-new-folder" onclick="openNewFolderModal()">+ Nova Pasta</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main id="mainContent">
+      <div class="main-header">
+        <div class="main-title" id="mainTitle">Todos os Arquivos</div>
+        <button class="btn btn-primary main-add-btn" onclick="openUploadModal()" style="flex-shrink:0">📎 Adicionar</button>
+      </div>
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value orange" id="statTotal">0</div></div>
+        <div class="stat-card"><div class="stat-label">Contas</div><div class="stat-value blue" id="statContas">0</div></div>
+        <div class="stat-card"><div class="stat-label">Faturas</div><div class="stat-value purple" id="statFaturas">0</div></div>
+        <div class="stat-card"><div class="stat-label">Comprovantes</div><div class="stat-value green" id="statComprovantes">0</div></div>
+      </div>
+      <div class="filter-row">
+        <span class="tag-filter active" data-tag="all" onclick="filterByTag(this,'all')">Todos</span>
+        <span class="tag-filter" data-tag="conta" onclick="filterByTag(this,'conta')">Contas</span>
+        <span class="tag-filter" data-tag="fatura" onclick="filterByTag(this,'fatura')">Faturas</span>
+        <span class="tag-filter" data-tag="comprovante" onclick="filterByTag(this,'comprovante')">Comprovantes</span>
+        <span class="tag-filter" data-tag="outros" onclick="filterByTag(this,'outros')">Outros</span>
+      </div>
+      <div id="filesContainer"></div>
+    </main>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <div class="bnav-item active" id="bnav-all" onclick="selectView('all');setBnav('all')">
+        <span class="bnav-icon">🗂️</span><span>Todos</span>
+      </div>
+      <div class="bnav-item" id="bnav-recent" onclick="selectView('recent');setBnav('recent')">
+        <span class="bnav-icon">🕐</span><span>Recentes</span>
+      </div>
+      <div class="bnav-item" id="bnav-months" onclick="openMobileSidebar();setBnav('months')">
+        <span class="bnav-icon">📅</span><span>Meses</span>
+      </div>
+      <div class="bnav-item" id="bnav-folders" onclick="openMobileSidebar('folders');setBnav('folders')">
+        <span class="bnav-icon">📁</span><span>Pastas</span>
+      </div>
+    </div>
+  </nav>
+
+</div><!-- end app-shell -->
+
+<!-- FAB -->
+<button class="fab" onclick="openUploadModal()">＋</button>
+
+<!-- MOBILE SIDEBAR DRAWER -->
+<div class="sidebar-drawer-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+<div id="mobileSidebar">
+  <div style="padding:16px 14px 4px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="font-family:Syne,sans-serif;font-weight:800;font-size:1.1rem">Doc<span style="color:var(--accent)">Guarda</span></span>
+      <button onclick="closeMobileSidebar()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+  </div>
+  <div class="sidebar-section nav-static">
+    <div class="sidebar-label">Navegação</div>
+    <div class="nav-item" onclick="selectView('all');closeMobileSidebar()"><span class="ico">🗂️</span> Todos os Arquivos</div>
+    <div class="nav-item" onclick="selectView('recent');closeMobileSidebar()"><span class="ico">🕐</span> Recentes</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Por Período</div>
+    <div id="yearGroupsMobile"></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Pastas</div>
+    <div id="customFoldersMobile"></div>
+    <button class="btn-new-folder" onclick="closeMobileSidebar();openNewFolderModal()">+ Nova Pasta</button>
+  </div>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="searchOverlay" onclick="closeSearchOnBg(event)">
+  <input class="search-box" id="mobileSearchInput" type="text" placeholder="🔍  Buscar documentos..." oninput="handleSearch(this.value)" autocomplete="off">
+  <div class="search-results" id="searchResults"></div>
+</div>
+
+<!-- MODAL UPLOAD -->
+<div class="modal-overlay" id="uploadModal" style="display:none">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
+    <h2>📎 Adicionar Arquivo</h2>
+    <div class="form-group">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+        <div class="drop-icon">📁</div>
+        <div id="dropText">Toque ou arraste para selecionar</div>
+        <div style="font-size:0.72rem;margin-top:3px;color:var(--muted)">PDF, JPG, PNG, DOC, XLS e mais</div>
+      </div>
+      <input type="file" id="fileInput" style="display:none" accept="*/*" onchange="fileSelected(this)">
+    </div>
+    <div class="form-group">
+      <label>Nome do Arquivo</label>
+      <input type="text" id="fileName" placeholder="Ex: Conta de Luz Março">
+    </div>
+    <div class="form-group">
+      <label>Tipo</label>
+      <select id="fileTag">
+        <option value="conta">Conta</option>
+        <option value="fatura">Fatura</option>
+        <option value="comprovante">Comprovante de Pagamento</option>
+        <option value="outros">Outros</option>
+      </select>
+    </div>
+    <div class="row-2">
+      <div class="form-group">
+        <label>Mês</label>
+        <select id="fileMonth">
+          <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+          <option value="03">Março</option><option value="04">Abril</option>
+          <option value="05">Maio</option><option value="06">Junho</option>
+          <option value="07">Julho</option><option value="08">Agosto</option>
+          <option value="09">Setembro</option><option value="10">Outubro</option>
+          <option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ano</label>
+        <input type="number" id="fileYear" min="2000" max="2099" value="2025">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Pasta (opcional)</label>
+      <select id="fileFolder"><option value="">— Nenhuma —</option></select>
+    </div>
+    <div class="form-group">
+      <label>Observações</label>
+      <textarea id="fileNote" rows="2" placeholder="Valor, vencimento, fornecedor..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('uploadModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveFile()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVA PASTA -->
+<div class="modal-overlay" id="folderModal" style="display:none">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('folderModal')">✕</button>
+    <h2>📁 Nova Pasta</h2>
+    <div class="form-group">
+      <label>Nome da Pasta</label>
+      <input type="text" id="folderName" placeholder="Ex: IPTU 2025, Plano de Saúde...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('folderModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveFolder()">Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEWER -->
+<div class="modal-overlay modal-viewer" id="viewerModal" style="display:none" onclick="closeViewerBg(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('viewerModal')">✕</button>
+    <div class="viewer-name" id="viewerName"></div>
+    <div class="viewer-body" id="viewerBody"></div>
+    <div class="viewer-meta-row" id="viewerMeta"></div>
+    <div class="modal-footer" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="downloadFile()">⬇️ Baixar</button>
+      <button class="btn btn-danger" onclick="deleteCurrentFile()">🗑️ Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let db, files = [], folders = [];
+let currentView = 'all', currentTag = 'all', currentViewMode = 'grid';
+let currentFileId = null, pendingFileData = null, searchQuery = '';
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// ─── RESPONSIVE SETUP ─────────────────────────────────────────────────────────
+function setupResponsive() {
+  const isMobile = window.innerWidth <= 640;
+  document.getElementById('desktopSearchWrap').style.display = isMobile ? 'none' : 'flex';
+  document.getElementById('mobileSearchBtn').style.display = isMobile ? 'flex' : 'none';
+  document.getElementById('menuBtn').style.display = isMobile ? 'flex' : 'none';
+  document.getElementById('desktopSidebar').style.display = isMobile ? 'none' : 'flex';
+}
+window.addEventListener('resize', setupResponsive);
+setupResponsive();
+
+// ─── INDEXEDDB ────────────────────────────────────────────────────────────────
+function initDB() {
+  const req = indexedDB.open('DocGuardaDB', 2);
+  req.onupgradeneeded = e => {
+    const d = e.target.result;
+    if (!d.objectStoreNames.contains('files')) {
+      d.createObjectStore('files', { keyPath: 'id', autoIncrement: true });
+    }
+    if (!d.objectStoreNames.contains('folders')) {
+      d.createObjectStore('folders', { keyPath: 'id', autoIncrement: true });
+    }
+  };
+  req.onsuccess = e => { db = e.target.result; loadAll(); };
+  req.onerror = () => toast('Erro ao inicializar o banco de dados', 'error');
+}
+
+const dbOp = (store, mode, fn) => new Promise((res, rej) => {
+  const tx = db.transaction(store, mode);
+  const s = tx.objectStore(store);
+  const req = fn(s);
+  req.onsuccess = () => res(req.result);
+  req.onerror = () => rej(req.error);
+});
+
+const dbGetAll = store => dbOp(store, 'readonly', s => s.getAll());
+const dbAdd = (store, data) => dbOp(store, 'readwrite', s => s.add(data));
+const dbDelete = (store, id) => dbOp(store, 'readwrite', s => s.delete(id));
+
+async function loadAll() {
+  files = await dbGetAll('files');
+  folders = await dbGetAll('folders');
+  renderSidebars();
+  renderMain();
+}
+
+// ─── SIDEBARS ─────────────────────────────────────────────────────────────────
+function renderSidebars() {
+  const yearsHTML = buildYearsHTML();
+  const foldersHTML = buildFoldersHTML();
+  ['Desktop','Mobile'].forEach(s => {
+    const yg = document.getElementById('yearGroups'+s);
+    const cf = document.getElementById('customFolders'+s);
+    if (yg) yg.innerHTML = yearsHTML;
+    if (cf) cf.innerHTML = foldersHTML;
+  });
+  const sel = document.getElementById('fileFolder');
+  if (sel) sel.innerHTML = '<option value="">— Nenhuma —</option>' +
+    folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+}
+
+function buildYearsHTML() {
+  const years = {};
+  files.forEach(f => {
+    if (!years[f.year]) years[f.year] = {};
+    years[f.year][f.month] = (years[f.year][f.month]||0) + 1;
+  });
+  return Object.keys(years).sort((a,b)=>b-a).map(y => `
+    <div class="year-group">
+      <button class="year-btn" onclick="toggleYear(this)">${y} <span class="arrow">▶</span></button>
+      <div class="months-list">
+        ${Object.keys(years[y]).sort().map(m => `
+          <div class="month-item ${currentView===y+'-'+m?'active':''}" onclick="selectView('${y}-${m}');closeMobileSidebar()">
+            <span>${MONTHS[parseInt(m)-1]}</span>
+            <span class="month-count">${years[y][m]}</span>
+          </div>`).join('')}
+      </div>
+    </div>`).join('') || '<div style="padding:6px 10px;font-size:0.78rem;color:var(--muted)">Nenhum arquivo ainda</div>';
+}
+
+function buildFoldersHTML() {
+  return folders.map(f => `
+    <div class="folder-item ${currentView==='folder-'+f.id?'active':''}" onclick="selectView('folder-${f.id}');closeMobileSidebar()">
+      <span>📁</span>
+      <span class="folder-name">${f.name}</span>
+      <button class="folder-del" onclick="event.stopPropagation();deleteFolder(${f.id})">✕</button>
+    </div>`).join('');
+}
+
+function toggleYear(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+// ─── MOBILE SIDEBAR ───────────────────────────────────────────────────────────
+function openMobileSidebar(section) {
+  document.getElementById('mobileSidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+function closeMobileSidebar() {
+  document.getElementById('mobileSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ─── SEARCH ───────────────────────────────────────────────────────────────────
+function openSearch() {
+  document.getElementById('searchOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('mobileSearchInput').focus(), 100);
+}
+function closeSearchOnBg(e) {
+  if (e.target === document.getElementById('searchOverlay')) {
+    document.getElementById('searchOverlay').classList.remove('open');
+    searchQuery = '';
+    renderMain();
+  }
+}
+function handleSearch(v) {
+  searchQuery = v.toLowerCase().trim();
+  if (document.getElementById('searchOverlay').classList.contains('open')) {
+    renderSearchResults();
+  } else {
+    renderMain();
+  }
+}
+function renderSearchResults() {
+  const res = document.getElementById('searchResults');
+  if (!searchQuery) { res.innerHTML = ''; return; }
+  const filtered = files.filter(f => f.name.toLowerCase().includes(searchQuery) || (f.note||'').toLowerCase().includes(searchQuery));
+  if (!filtered.length) { res.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem">Nenhum resultado encontrado</div>'; return; }
+  res.innerHTML = filtered.map(f => `
+    <div class="search-item" onclick="closeSearch();openViewer(${f.id})">
+      <div class="search-item-icon">${getFileIcon(f.mime)}</div>
+      <div>
+        <div class="search-item-name">${f.name}</div>
+        <div class="search-item-meta">${MONTHS[parseInt(f.month)-1]} ${f.year} • <span class="file-tag tag-${f.tag}" style="padding:1px 6px">${tagLabel(f.tag)}</span></div>
+      </div>
+    </div>`).join('');
+}
+function closeSearch() {
+  document.getElementById('searchOverlay').classList.remove('open');
+  searchQuery = '';
+}
+
+// ─── MAIN RENDER ──────────────────────────────────────────────────────────────
+function selectView(v) {
+  currentView = v;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (v === 'all') document.getElementById('nav-all')?.classList.add('active');
+  else if (v === 'recent') document.getElementById('nav-recent')?.classList.add('active');
+  renderSidebars();
+  renderMain();
+}
+
+function setBnav(id) {
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('bnav-'+id)?.classList.add('active');
+}
+
+function renderMain() {
+  let filtered = [...files];
+  let title = 'Todos os Arquivos', subtitle = '';
+
+  if (currentView === 'recent') {
+    filtered.sort((a,b) => b.id - a.id);
+    filtered = filtered.slice(0, 30);
+    title = '🕐 Recentes';
+  } else if (/^\d{4}-\d{2}$/.test(currentView)) {
+    const [y,m] = currentView.split('-');
+    filtered = filtered.filter(f => f.year==y && f.month==m);
+    title = MONTHS[parseInt(m)-1];
+    subtitle = y;
+  } else if (currentView.startsWith('folder-')) {
+    const fid = parseInt(currentView.split('-')[1]);
+    filtered = filtered.filter(f => f.folderId==fid);
+    const folder = folders.find(f => f.id===fid);
+    title = folder ? '📁 '+folder.name : 'Pasta';
+  }
+
+  if (currentTag !== 'all') filtered = filtered.filter(f => f.tag === currentTag);
+  if (searchQuery) filtered = filtered.filter(f => f.name.toLowerCase().includes(searchQuery) || (f.note||'').toLowerCase().includes(searchQuery));
+
+  document.getElementById('mainTitle').innerHTML = `${title}<small>${subtitle}</small>`;
+  document.getElementById('statTotal').textContent = files.length;
+  document.getElementById('statContas').textContent = files.filter(f=>f.tag==='conta').length;
+  document.getElementById('statFaturas').textContent = files.filter(f=>f.tag==='fatura').length;
+  document.getElementById('statComprovantes').textContent = files.filter(f=>f.tag==='comprovante').length;
+
+  const container = document.getElementById('filesContainer');
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><h3>Nenhum arquivo aqui</h3><p>Adicione documentos usando o botão +</p></div>`;
+    return;
+  }
+  container.innerHTML = currentViewMode === 'grid'
+    ? `<div class="files-grid">${filtered.map(renderCard).join('')}</div>`
+    : `<div class="files-list">${filtered.map(renderRow).join('')}</div>`;
+}
+
+function getFileIcon(mime) {
+  if (!mime) return '📄';
+  if (mime.startsWith('image/')) return '🖼️';
+  if (mime === 'application/pdf') return '📋';
+  if (mime.includes('word')||mime.includes('document')) return '📝';
+  if (mime.includes('sheet')||mime.includes('excel')) return '📊';
+  if (mime.includes('zip')||mime.includes('rar')) return '🗜️';
+  return '📄';
+}
+
+function tagLabel(t) { return {conta:'Conta',fatura:'Fatura',comprovante:'Comprovante',outros:'Outros'}[t]||t; }
+
+function renderCard(f) {
+  const isImg = f.mime && f.mime.startsWith('image/');
+  const thumb = isImg
+    ? `<div class="file-thumb"><img src="${f.dataUrl}" loading="lazy"></div>`
+    : `<div class="file-thumb">${getFileIcon(f.mime)}</div>`;
+  return `
+    <div class="file-card" onclick="openViewer(${f.id})">
+      <button class="del-btn" onclick="event.stopPropagation();deleteFile(${f.id})">🗑️</button>
+      ${thumb}
+      <div class="file-name" title="${f.name}">${f.name}</div>
+      <div class="file-meta">${MONTHS[parseInt(f.month)-1]} ${f.year}</div>
+      <span class="file-tag tag-${f.tag}">${tagLabel(f.tag)}</span>
+    </div>`;
+}
+
+function renderRow(f) {
+  return `
+    <div class="file-row" onclick="openViewer(${f.id})">
+      <div class="file-row-icon">${getFileIcon(f.mime)}</div>
+      <div class="file-row-info">
+        <div class="file-row-name">${f.name}</div>
+        <div class="file-row-meta">${MONTHS[parseInt(f.month)-1]} ${f.year} • <span class="file-tag tag-${f.tag}" style="padding:1px 5px">${tagLabel(f.tag)}</span>${f.note?' • '+f.note:''}</div>
+      </div>
+      <button class="file-row-del" onclick="event.stopPropagation();deleteFile(${f.id})">🗑️</button>
+    </div>`;
+}
+
+// ─── UPLOAD ───────────────────────────────────────────────────────────────────
+function openUploadModal() {
+  const now = new Date();
+  document.getElementById('fileMonth').value = String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('fileYear').value = now.getFullYear();
+  document.getElementById('fileName').value = '';
+  document.getElementById('fileNote').value = '';
+  document.getElementById('fileTag').value = 'conta';
+  document.getElementById('dropZone').className = 'drop-zone';
+  document.getElementById('dropText').textContent = 'Toque ou arraste para selecionar';
+  pendingFileData = null;
+  renderSidebars();
+  document.getElementById('uploadModal').style.display = 'flex';
+}
+
+function fileSelected(input) { if (input.files[0]) processFile(input.files[0]); }
+function dragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('has-file'); }
+function dragLeave() { if (!pendingFileData) document.getElementById('dropZone').classList.remove('has-file'); }
+function dropFile(e) {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+}
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    pendingFileData = { dataUrl: e.target.result, mime: file.type, size: file.size };
+    document.getElementById('dropZone').classList.add('has-file');
+    document.getElementById('dropText').textContent = '✅ ' + file.name;
+    if (!document.getElementById('fileName').value)
+      document.getElementById('fileName').value = file.name.replace(/\.[^/.]+$/,'');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveFile() {
+  if (!pendingFileData) { toast('Selecione um arquivo primeiro', 'error'); return; }
+  const name = document.getElementById('fileName').value.trim();
+  if (!name) { toast('Digite um nome para o arquivo', 'error'); return; }
+  await dbAdd('files', {
+    name, tag: document.getElementById('fileTag').value,
+    month: document.getElementById('fileMonth').value,
+    year: parseInt(document.getElementById('fileYear').value),
+    folderId: document.getElementById('fileFolder').value || null,
+    note: document.getElementById('fileNote').value.trim(),
+    dataUrl: pendingFileData.dataUrl,
+    mime: pendingFileData.mime,
+    size: pendingFileData.size,
+    createdAt: new Date().toISOString()
+  });
+  closeModal('uploadModal');
+  toast('Arquivo salvo! ✅', 'success');
+  await loadAll();
+}
+
+// ─── FOLDERS ─────────────────────────────────────────────────────────────────
+function openNewFolderModal() {
+  document.getElementById('folderName').value = '';
+  document.getElementById('folderModal').style.display = 'flex';
+}
+async function saveFolder() {
+  const name = document.getElementById('folderName').value.trim();
+  if (!name) { toast('Digite um nome', 'error'); return; }
+  await dbAdd('folders', { name, createdAt: new Date().toISOString() });
+  closeModal('folderModal');
+  toast('Pasta criada!', 'success');
+  await loadAll();
+}
+async function deleteFolder(id) {
+  if (!confirm('Excluir esta pasta? Os arquivos não serão apagados.')) return;
+  await dbDelete('folders', id);
+  if (currentView === 'folder-'+id) currentView = 'all';
+  toast('Pasta excluída', 'success');
+  await loadAll();
+}
+
+// ─── VIEWER ───────────────────────────────────────────────────────────────────
+function openViewer(id) {
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+  currentFileId = id;
+  document.getElementById('viewerName').textContent = f.name;
+  const body = document.getElementById('viewerBody');
+  if (f.mime && f.mime.startsWith('image/')) {
+    body.innerHTML = `<img src="${f.dataUrl}" alt="${f.name}">`;
+  } else if (f.mime === 'application/pdf') {
+    body.innerHTML = `<iframe src="${f.dataUrl}"></iframe>`;
+  } else {
+    body.innerHTML = `<div style="padding:28px;text-align:center;color:var(--muted)"><div style="font-size:2.5rem">${getFileIcon(f.mime)}</div><p style="margin-top:10px;font-size:0.85rem">Prévia não disponível.<br>Use "Baixar" para abrir.</p></div>`;
+  }
+  document.getElementById('viewerMeta').innerHTML = `
+    <span>📅 ${MONTHS[parseInt(f.month)-1]} ${f.year}</span>
+    <span class="file-tag tag-${f.tag}">${tagLabel(f.tag)}</span>
+    ${f.note?`<span>📝 ${f.note}</span>`:''}
+    ${f.size?`<span>💾 ${(f.size/1024).toFixed(1)} KB</span>`:''}`;
+  document.getElementById('viewerModal').style.display = 'flex';
+}
+function closeViewerBg(e) { if (e.target === document.getElementById('viewerModal')) closeModal('viewerModal'); }
+function downloadFile() {
+  const f = files.find(x => x.id === currentFileId);
+  if (!f) return;
+  const a = document.createElement('a');
+  a.href = f.dataUrl; a.download = f.name; a.click();
+}
+async function deleteCurrentFile() {
+  if (!confirm('Excluir permanentemente?')) return;
+  await dbDelete('files', currentFileId);
+  closeModal('viewerModal');
+  toast('Arquivo excluído', 'success');
+  await loadAll();
+}
+async function deleteFile(id) {
+  if (!confirm('Excluir este arquivo?')) return;
+  await dbDelete('files', id);
+  toast('Excluído', 'success');
+  await loadAll();
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function filterByTag(el, tag) {
+  currentTag = tag;
+  document.querySelectorAll('.tag-filter').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderMain();
+}
+function setView(mode) {
+  currentViewMode = mode;
+  document.getElementById('btnGrid').classList.toggle('active', mode==='grid');
+  document.getElementById('btnList').classList.toggle('active', mode==='list');
+  renderMain();
+}
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function toast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ─── SERVICE WORKER ───────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ─── GERAR ÍCONES ─────────────────────────────────────────────────────────────
+function generateIcon(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0e0f14';
+  ctx.roundRect(0, 0, size, size, size * 0.18);
+  ctx.fill();
+  ctx.fillStyle = '#f5a623';
+  ctx.font = `bold ${size*0.55}px Syne, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('D', size/2, size/2);
+  return canvas.toDataURL('image/png');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+initDB();
+</script>
+</body>
+</html>
